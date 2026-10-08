@@ -12,7 +12,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/user-account/**") // 모든 api는 "/**"
                 .allowedOrigins("http://localhost:3000")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("Content-Type", "Authoriztion");
+                .allowedHeaders("Content-Type", "Authorization");
     }
 
 

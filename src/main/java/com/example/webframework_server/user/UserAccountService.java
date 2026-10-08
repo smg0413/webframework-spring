@@ -1,11 +1,9 @@
 package com.example.webframework_server.user;
 
-import com.example.webframework_server.user.dto.LoginRequest;
-import com.example.webframework_server.user.dto.LoginResponse;
-import com.example.webframework_server.user.dto.SignUpRequest;
-import com.example.webframework_server.user.dto.SignUpResponse;
+import com.example.webframework_server.user.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
@@ -28,6 +26,14 @@ public class UserAccountService {
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtEncoder jwtEncoder;
+
+    @Transactional(readOnly = true)
+    public MeResponse me(Long accountId) {
+        UserAccount userAccount = userAccountRepository.findByIdAndDeleted(accountId, false)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, " 사용할 수 없는 계정입니다."));
+
+        return new MeResponse(userAccount.getId(), userAccount.getEmail(), userAccount.getNickname());
+    }
 
     public LoginResponse login(LoginRequest request) {
 

@@ -1,13 +1,12 @@
 package com.example.webframework_server.user;
 
-import com.example.webframework_server.user.dto.LoginRequest;
-import com.example.webframework_server.user.dto.LoginResponse;
-import com.example.webframework_server.user.dto.SignUpRequest;
-import com.example.webframework_server.user.dto.SignUpResponse;
+import com.example.webframework_server.user.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,6 +15,16 @@ import org.springframework.web.bind.annotation.*;
 public class UserAccountController {
     private final UserAccountRepository userAccountRepository;
     private final UserAccountService userAccountService;
+
+    @GetMapping("/me")
+    public ResponseEntity<MeResponse> me(@AuthenticationPrincipal Jwt jwt) {
+        Long accountId = Long.valueOf(jwt.getSubject());
+
+        System.out.println(("accountId: " + accountId));
+
+        return ResponseEntity.ok()
+                .body(userAccountService.me(accountId));
+    }
 
     // login api
     // 이메일, 패스워드 -> jwt

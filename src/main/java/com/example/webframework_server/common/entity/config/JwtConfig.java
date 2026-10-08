@@ -4,20 +4,25 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.*;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.time.Duration;
 import java.util.Base64;
 
 @Configuration
 public class JwtConfig {
 
+    // 발급과 검증에서 함꼐 사용할 키
     @Bean
-    public JwtEncoder jwtEncoder(
-            @Value("${JWT_SECRET}") String secret
-    ) {
+    public SecretKey jwtKey(@Value("${JWT_SECRET}") String secret)
+     {
         byte[] keyBytes = Base64.getDecoder().decode(secret);
 
   //      System.out.println(Base64.getUrlEncoder()
@@ -30,6 +35,49 @@ public class JwtConfig {
 
         SecretKey key = new SecretKeySpec(keyBytes, "HmacSHA256");
 
-        return new NimbusJwtEncoder(new ImmutableSecret<>(key));
+        return new SecretKeySpec(keyBytes, "HmacShA256");
+    }
+
+    // JWT 발급
+    @Bean
+    public JwtEncoder jwtEncoder(SecretKey jwtKey) {
+        return new NimbusJwtEncoder(new ImmutableSecret<>(jwtKey));
+    }
+
+
+    // JWT 검증
+    @Bean
+    public JwtDecoder jwtDecoder(SecretKey jwtKey) {
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(jwtKey).macAlgorithm(MacAlgorithm.HS256).build();
+
+        // 시간 오차 허용하지 않겠다.
+        JwtTimestampValidator time = new JwtTimestampValidator(Duration.ZERO);
+
+        JwtIssuerValidator issuer = new JwtIssuerValidator("webframework-server");
+
+        // exp 존재, sub 양수인지 체크
+        OAuth2TokenValidator<Jwt> requiredClaims = jwt -> {
+            boolean validSubjecct;
+
+            try {
+                validSubjecct = Long.parseLong(jwt.getSubject()) > 0;
+            } catch (RuntimeException ex) {
+                validSubjecct = false;
+            }
+
+            if (jwt.getExpiresAt() == null || !validSubjecct) {
+                return OAuth2TokenValidatorResult.failure(
+                        new OAuth2Error("invalid_token", "Invalid JWT token.", null)
+                );
+            }
+
+            return OAuth2TokenValidatorResult.success();
+        };
+
+        decoder.setJwtValidator(
+                new DelegatingOAuth2TokenValidator<>(time, issuer, requiredClaims)
+        );  // validator 적용
+
+        return decoder;
     }
 }

@@ -1,4 +1,4 @@
-package com.example.webframework_server.common.entity.config;
+package com.example.webframework_server.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

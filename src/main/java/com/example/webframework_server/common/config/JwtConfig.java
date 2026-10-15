@@ -1,4 +1,4 @@
-package com.example.webframework_server.common.entity.config;
+package com.example.webframework_server.common.config;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import org.springframework.beans.factory.annotation.Value;

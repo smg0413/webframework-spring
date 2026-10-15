@@ -1,7 +1,7 @@
 package com.example.webframework_server.user;
 
 
-import com.example.webframework_server.common.entity.entity.BaseEntity;
+import com.example.webframework_server.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.AccessLevel;

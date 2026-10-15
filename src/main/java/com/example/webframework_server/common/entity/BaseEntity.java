@@ -1,4 +1,4 @@
-package com.example.webframework_server.common.entity.entity;
+package com.example.webframework_server.common.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

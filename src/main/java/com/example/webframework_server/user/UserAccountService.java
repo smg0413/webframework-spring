@@ -25,7 +25,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserAccountService {
 
-    private static long ACCESS_TOKEN_EXPIRES_IN_SECONDS = 15 * 60;
+   // private static long ACCESS_TOKEN_EXPIRES_IN_SECONDS = 15 * 60;
+   private static long ACCESS_TOKEN_EXPIRES_IN_SECONDS = 2;
 
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;

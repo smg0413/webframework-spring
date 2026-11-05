@@ -10,7 +10,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/user-account/**") // 모든 api는 "/**"
-                .allowedOrigins("http://localhost:3000")
+                .allowedOrigins("http://localhost:3000", "http://172.16.0.62:3000")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("Content-Type", "Authorization")
                 .allowCredentials(true); // 허용된 프론트엔드가 쿠키 같은 인증 정보를 포함한 cors 요청, 응답 허용

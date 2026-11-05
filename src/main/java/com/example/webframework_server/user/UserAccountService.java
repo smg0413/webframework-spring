@@ -43,6 +43,7 @@ public class UserAccountService {
                 .subject(userAccount.getId().toString())
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(ACCESS_TOKEN_EXPIRES_IN_SECONDS))
+                .claim("nickname", userAccount.getNickname())
                 .build();
 
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).type("JWT").build();

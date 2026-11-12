@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -29,10 +30,35 @@ public class UserAccountService {
 
 
     private final UserAccountRepository userAccountRepository;
+    private final AvatarRepository avatarRepository;
+
     private final PasswordEncoder passwordEncoder;
     private final JwtEncoder jwtEncoder;
 
     private final RefreshTokenService refreshTokenService;
+
+    public void updateAvatar(Long accountId, Long avatarId) {
+        // 계정 확인
+        // findByAndDeleted 체크
+        // "사용할 수 없는 계정입니다." exception
+        UserAccount userAccount = userAccountRepository.findByIdAndDeleted(accountId, false)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "사용할 수 없는 계정입니다."));
+
+        // avatarId 확인
+        Avatar avatar = avatarRepository.findByIdAndDeletedFalse(avatarId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, " 존재하지 않는 아바타입니다."));
+
+        // 업데이트
+        userAccount.setAvatar(avatar);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AvatarResponse> getAvatars() {
+        return avatarRepository.findByDeletedFalse()
+                .stream()
+                .map(avatar -> new AvatarResponse(avatar.getId(), avatar.getSrc(), avatar.getBgColor()))
+                .toList();
+    }
 
     private String createJwtToken(UserAccount userAccount) {
         // jwt를 발행 (유효시간 15분)
@@ -72,9 +98,15 @@ public class UserAccountService {
         UserAccount userAccount = userAccountRepository.findByIdAndDeleted(accountId, false)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, " 사용할 수 없는 계정입니다."));
 
-        System.out.println("내 정보 요청 " + userAccount.getId());
+        Avatar avatar = userAccount.getAvatar();
 
-        return new MeResponse(userAccount.getId(), userAccount.getEmail(), userAccount.getNickname());
+        AvatarResponse avatarResponse = null;
+
+        if (avatar != null) {
+            avatarResponse = new AvatarResponse(avatar.getId(), avatar.getSrc(), avatar.getBgColor());
+        }
+
+        return new MeResponse(userAccount.getId(), userAccount.getEmail(), userAccount.getNickname(), avatarResponse);
     }
 
     public LoginResponse login(LoginRequest request) {

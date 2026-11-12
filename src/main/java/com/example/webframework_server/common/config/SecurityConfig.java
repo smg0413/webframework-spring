@@ -36,7 +36,9 @@ public class SecurityConfig {
                                  ).permitAll()
                                 .requestMatchers(HttpMethod.GET, "/user-account/signup").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/ws-chat").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/user-account/me").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/user-account/**").authenticated()
+                                .requestMatchers(HttpMethod.PUT, "/user-account/**").authenticated()
+                                //.requestMatchers(HttpMethod.GET, "/put-avatar").authenticated()
                                 .anyRequest().denyAll()
                 )
                 .oauth2ResourceServer( resource
